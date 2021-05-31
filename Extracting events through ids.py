@@ -11,11 +11,10 @@ import warnings
 warnings.filterwarnings("ignore")
 #from googlesearch import search 
 from selenium import webdriver
-import os
 import time as time
 import datetime
 
-
+#We initialize the date and the webd Driver
 
 driver = webdriver.Chrome()
 
@@ -24,15 +23,23 @@ fecha=datetime.datetime(2020,2,25, 10, 15, 00, 00000)
 title=[]
 id=[]
 
+# We are going to go through 465 days, so we develop a loop for everyone of them
+
 for d in range(0,465):
+ 
+    #We create the URL and we retrieve it
  
     time.sleep(1)
     fecha=fecha+datetime.timedelta(days=1) 
     print(fecha)   
     origen="https://www.trumba.com/calendars/gazette?date=0000000000&filterview=Gazette+Classification&filter1=_1658005_41129_67204_41149_41130_41156_41140_41141_41131_41142_78368_41132_41133_41143_41144_41134_41135_41136_41155_67253_67883_41145_41137_41159_79205_41138_41139_41150_41160_229262_41147_41157_41158_64137_&filterfield1=15202&media=print"
-    web=origen.replace("0000000000",str(fecha.year)+str(fecha.month).zfill(2)+str(fecha.day).zfill(2))
+    web=origen.replace("0000000000",
+                       str(fecha.year)+str(fecha.month).zfill(2)+str(fecha.day).zfill(2))
     driver.get(web)
-    soup=BeautifulSoup(driver.page_source, 'html') 
+    soup=BeautifulSoup(driver.page_source, 
+                       'html') 
+    
+    #We obtain the id of the event and the title
     
     events=soup.find_all(class_="ebg0")
   
@@ -42,9 +49,17 @@ for d in range(0,465):
             id.append(e[2].find("a")["eventid"])
             title.append(e[2].find("a")["url.seotitle"])
     
-results=pd.DataFrame(zip(id,title), columns=['Id', 'title'])
-results.to_excel("ids de Harvard.xlsx",sheet_name='Harvard')
-results=pd.read_excel("ids de Harvard.xlsx",sheet_name='Harvard')
+#We build the dataframe and we save it as Excel File
+results=pd.DataFrame(zip(id,title),
+                     columns=['Id', 'title'])
+results.to_excel("ids de Harvard.xlsx",
+                 sheet_name='Harvard')
+results=pd.read_excel("ids de Harvard.xlsx",
+                      sheet_name='Harvard')
+
+#We drop ID duplicates adn we create the new fields for the information that
+#we are going to retrieve
+
 results.drop_duplicates(subset="Id",
                                 keep = False, 
                                 inplace = True)
@@ -53,7 +68,10 @@ results["descrip"]=""
 results["web"]=""
 results["date"]=""
 
+#Now we get the information from the websites of every event and we store it in the results dataframe
+
 for i in range(0,len(results)):
+    
     results.copy()
     time.sleep(1)
     idevent=results.iloc[i]["Id"]
@@ -64,6 +82,7 @@ for i in range(0,len(results)):
     tbl=soup.find("table")
     results.iloc[i, results.columns.get_loc('web')] = web
     results.iloc[i, results.columns.get_loc('title2')] = soup.find(class_="twEDDescription").text
+    
     print(soup.find(class_="twEDDescription").text)
    
     for tr in tbl.find_all('tr'):        
@@ -77,4 +96,5 @@ for i in range(0,len(results)):
                for b in bloque:
                    results.iloc[i, results.columns.get_loc('date')] = b.text
         
-results.to_excel("eventos de Harvard.xlsx",sheet_name='Harvard')  
+results.to_excel("eventos de Harvard.xlsx",
+                 sheet_name='Harvard')  
