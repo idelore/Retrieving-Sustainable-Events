@@ -10,7 +10,9 @@ import pandas as pd
 import warnings
 warnings.filterwarnings("ignore")
 import re, string
-#from googlesearch import search 
+
+
+#Ok, we import the events and the Keywords used
 
 resultadolen=0
 positivos=0
@@ -22,11 +24,16 @@ odsp=[ ]
 
 sdgall=list(pd.unique(palabrasclaves['SDG']))
 
+#This function would prepare de text for analysis
+
 def palabreador (text):
     text=re.sub('[%s]' % re.escape(string.punctuation), '', text)
     text=text.lower()
     text = " ".join(text.split())
     return text
+
+
+#First, we search for the words directly in the events. We sum the results
 
 for sdg in sdgall:
     odsp=[]
@@ -49,6 +56,10 @@ for sdg in sdgall:
     
 resultadopos=eventos.copy(deep=True)
 
+
+#Second, we establish a threshold and we check if the number of word frequency 
+# is enough. We mark the events, for every SDG, with 1 if positive.
+
 umbral=0.05
 
 for sdg in sdgall:
@@ -69,6 +80,9 @@ for sdg in sdgall:
             print("Negativo")
 
 
+#In case we need to know what word was detected, we also create a dataframe
+#with this information
+
 resultadopor=resultado.copy(deep=True)
 
 for sdg in sdgall:
@@ -83,6 +97,9 @@ for sdg in sdgall:
         resultadopor.loc[indice_fila,sdg]=poractivo
         
         
+# Considering how many words has every SDG, we calculate a percentage of
+#the word present.
+
 resultadopalabras=eventos.copy(deep=True)
 
 for sdg in sdgall:
@@ -104,12 +121,15 @@ for sdg in sdgall:
         resultadopalabras[nomsdg]=odsp
     print("---------------------")
     
+#We export all the data.
 
 with pd.ExcelWriter('analisis eventos ODS Harvard.xlsx') as writer: 
     resultado.to_excel(writer, sheet_name='Número de palabras')
     resultadopos.to_excel(writer, sheet_name='Porcentaje umbral ' + str(umbral))  
     resultadopor.to_excel(writer, sheet_name='Porcentaje')
     resultadopalabras.to_excel(writer, sheet_name='Palabras') 
+    
+#In order to use the data in the Data Studio, we need to melt the dataframe and export
 
 resultadobuscador=pd.melt(resultado,value_vars=['SDG 01', 'SDG 02', 'SDG 03', 'SDG 04', 'SDG 05', 'SDG 06', 'SDG 07',
        'SDG 08', 'SDG 09', 'SDG 10', 'SDG 11', 'SDG 12', 'SDG 13', 'SDG 14',
